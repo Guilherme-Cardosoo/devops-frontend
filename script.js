@@ -1,4 +1,5 @@
 const API_URL = "http://localhost:8000/produtos";
+const formulario = document.getElementById("produto-form");
 
 console.log("Script carregado!");
 
@@ -26,5 +27,30 @@ async function carregarProdutos() {
         `;
     });
 }
+
+formulario.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const produto = {
+        nome: document.getElementById("nome").value,
+        preco: parseFloat(document.getElementById("preco").value),
+        categoria: document.getElementById("categoria").value
+    };
+
+    const resposta = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(produto)
+    });
+
+    if (resposta.ok) {
+        formulario.reset();
+        carregarProdutos();
+    } else {
+        alert("Erro ao cadastrar produto.");
+    }
+});
 
 carregarProdutos();

@@ -1,6 +1,8 @@
 const API_URL = "http://localhost:8000/produtos";
 const formulario = document.getElementById("produto-form");
 
+let produtoEditando = null;
+
 console.log("Script carregado!");
 
 async function carregarProdutos() {
@@ -20,7 +22,12 @@ async function carregarProdutos() {
                 <td>${produto.categoria}</td>
                 <td>R$ ${produto.preco}</td>
                 <td class="acoes">
-                    <button class="btn-editar">Editar</button>
+                    <button
+                        class="btn-editar"
+                        onclick="editarProduto(${produto.id})"
+                    >
+                        Editar
+                    </button>
                     <button
                         class="btn-excluir"
                         onclick="excluirProduto(${produto.id})"
@@ -53,6 +60,28 @@ async function excluirProduto(id) {
 
 }
 
+async function editarProduto(id) {
+
+    const resposta = await fetch(API_URL);
+
+    const produtos = await resposta.json();
+
+    const produto = produtos.find(p => p.id === id);
+
+    if (!produto) {
+        return;
+    }
+
+    produtoEditando = id;
+
+    document.getElementById("nome").value = produto.nome;
+    document.getElementById("preco").value = produto.preco;
+    document.getElementById("categoria").value = produto.categoria;
+
+    formulario.querySelector("button").textContent = "Salvar";
+
+}
+
 formulario.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -62,20 +91,46 @@ formulario.addEventListener("submit", async (event) => {
         categoria: document.getElementById("categoria").value
     };
 
-    const resposta = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(produto)
-    });
+    let resposta;
+
+    if (produtoEditando === null) {
+
+        resposta = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(produto)
+        });
+
+    } else {
+
+        resposta = await fetch(`${API_URL}/${produtoEditando}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(produto)
+        });
+
+    }
 
     if (resposta.ok) {
+
         formulario.reset();
+
+        produtoEditando = null;
+
+        formulario.querySelector("button").textContent = "Cadastrar";
+
         carregarProdutos();
+
     } else {
-        alert("Erro ao cadastrar produto.");
+
+        alert("Erro ao salvar produto.");
+
     }
+
 });
 
 carregarProdutos();

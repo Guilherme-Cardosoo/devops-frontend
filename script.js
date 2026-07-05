@@ -21,11 +21,36 @@ async function carregarProdutos() {
                 <td>R$ ${produto.preco}</td>
                 <td class="acoes">
                     <button class="btn-editar">Editar</button>
-                    <button class="btn-excluir">Excluir</button>
+                    <button
+                        class="btn-excluir"
+                        onclick="excluirProduto(${produto.id})"
+                    >
+                        Excluir
+                    </button>
                 </td>
             </tr>
         `;
     });
+}
+
+async function excluirProduto(id) {
+
+    const confirmar = confirm("Deseja realmente excluir este produto?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const resposta = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE"
+    });
+
+    if (resposta.ok) {
+        carregarProdutos();
+    } else {
+        alert("Erro ao excluir produto.");
+    }
+
 }
 
 formulario.addEventListener("submit", async (event) => {
